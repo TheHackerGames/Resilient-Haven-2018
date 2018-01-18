@@ -4,18 +4,14 @@ import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.server.Directives
 import akka.stream.Materializer
-import com.resilient.model.JsonWebToken
 import com.typesafe.config.Config
-import io.circe.syntax.EncoderOps
-import pdi.jwt.{Jwt, JwtAlgorithm}
 
 import scala.concurrent.ExecutionContextExecutor
 
-trait AuthenticationDirective {
+trait RoomDirective {
 
   import Directives._
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
-  import io.circe.generic.auto._
 
   private case class AuthenticationRequest(militaryId: String, firstName: String, lastName: String)
 
@@ -27,18 +23,10 @@ trait AuthenticationDirective {
   val config: Config
   val logger: LoggingAdapter
 
-  val authRoute = pathPrefix("auth") {
-    post {
-      entity(as[AuthenticationRequest]) { auth =>
-        complete {
-          val instanceId = config.getString("chatkit.instanceLocator")
-          val secretKey = config.getString("chatkit.secret")
-          val keyId = config.getString("chatkit.keyId")
+  val roomRoute = pathPrefix("rooms") {
+    get {
+      complete {
 
-          val jwt = JsonWebToken(instanceId, s"api_keys/$keyId", "Test")
-
-          Jwt.encode(jwt.asJson.noSpaces, secretKey, JwtAlgorithm.HS256)
-        }
       }
     }
   }
