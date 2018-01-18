@@ -10,7 +10,7 @@ import com.resilient.providers.ConfigProvider
 import com.resilient.routes.AuthenticationDirective
 import com.typesafe.config.{Config, ConfigFactory}
 
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
+import scala.concurrent.ExecutionContextExecutor
 
 trait Service extends AuthenticationDirective {
   self: ConfigProvider =>
