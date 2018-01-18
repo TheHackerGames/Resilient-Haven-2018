@@ -4,34 +4,45 @@ import akka.actor.ActorSystem
 import akka.event.{Logging, LoggingAdapter}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
 import akka.stream.{ActorMaterializer, Materializer}
+import com.resilient.providers.ConfigProvider
 import com.resilient.routes.AuthenticationDirective
 import com.typesafe.config.{Config, ConfigFactory}
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 trait Service extends AuthenticationDirective {
+  self: ConfigProvider =>
+
   implicit val system: ActorSystem
-  implicit def executor: ExecutionContextExecutor
   implicit val materializer: Materializer
 
   val logger: LoggingAdapter
   val config: Config
 
-  val routes = {
-    logRequestResult("akka-http-microservice") {
-      authRoute
-    }
+  val routes: Route = logRequestResult("akka-http-microservice") {
+    authRoute
   }
+
 }
 
-object Application extends App with Service {
-  override implicit val system = ActorSystem()
-  override implicit val executor = system.dispatcher
-  override implicit val materializer = ActorMaterializer()
+object Application extends App {
 
-  override val config = ConfigFactory.load()
-  override val logger = Logging(system, getClass)
+  implicit val system$: ActorSystem = ActorSystem()
+  implicit val executor$: ExecutionContextExecutor = system$.dispatcher
+  implicit val materializer$: ActorMaterializer = ActorMaterializer()
+  val config$: Config = ConfigFactory.load()
 
-  Http().bindAndHandle(routes, config.getString("http.interface"), config.getInt("http.port"))
+  val service: Service = new Service with ConfigProvider {
+    lazy implicit val system: ActorSystem = system$
+    lazy implicit val executor: ExecutionContextExecutor = executor$
+    lazy implicit val materializer: ActorMaterializer = materializer$
+    lazy val logger = Logging(system, getClass)
+    lazy val config: Config = config$
+  }
+
+
+
+  Http().bindAndHandle(service.routes, config$.getString("http.interface"), config$.getInt("http.port"))
 }
