@@ -1,13 +1,12 @@
-//import ReleaseTransformations._
+import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 
 name := "encryption-api"
-
-version := "0.0.3"
 
 scalaVersion := "2.12.4"
 
 mainClass in assembly := Some("com.resilient.Application")
 organization := "com.resilient"
+releaseVersionBump := sbtrelease.Version.Bump.Major
 
 libraryDependencies ++= {
   val akkaV = "2.5.9"
@@ -27,16 +26,12 @@ libraryDependencies ++= {
 }
 
 
-//releaseProcess := Seq[ReleaseStep](
-//  checkSnapshotDependencies,              // : ReleaseStep
-//  inquireVersions,                        // : ReleaseStep
-//  runClean,                               // : ReleaseStep
-//  runTest,                                // : ReleaseStep
-//  setReleaseVersion,                      // : ReleaseStep
-//  commitReleaseVersion,                   // : ReleaseStep, performs the initial git checks
-//  tagRelease,                             // : ReleaseStep
-//  publishArtifacts,                       // : ReleaseStep, checks whether `publishTo` is properly set up
-//  setNextVersion,                         // : ReleaseStep
-//  commitNextVersion,                      // : ReleaseStep
-//  pushChanges                             // : ReleaseStep, also checks that an upstream branch is properly configured
-//)
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies, // : ReleaseStep
+  inquireVersions, // : ReleaseStep
+  runClean, // : ReleaseStep
+  runTest, // : ReleaseStep
+  setReleaseVersion, // : ReleaseStep
+  releaseStepCommand("assembly"),
+  setNextVersion, // : ReleaseStep
+)
