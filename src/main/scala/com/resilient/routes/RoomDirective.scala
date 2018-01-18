@@ -23,29 +23,26 @@ trait RoomDirective {
   val config: Config
 
   private val rooms = system.actorOf(Props[Rooms], "rooms")
+  private implicit val askTimeout: Timeout = 3 seconds // and a timeout
 
-  val roomRoute: Route = pathPrefix("rooms") {
+  val roomRoute: Route = path("rooms") {
     rejectEmptyResponse {
       (get & parameters("type")) { (roomType) =>
-        implicit val askTimeout: Timeout = 3 seconds // and a timeout
-
         onSuccess((rooms ? Rooms.PopRoom(RoomType.withName(roomType))).mapTo[Option[Room]]) { maybeRoom =>
           complete(maybeRoom)
         }
       } ~
         get {
-          implicit val askTimeout: Timeout = 3 seconds // and a timeout
-
           onSuccess((rooms ? Rooms.PopRoom).mapTo[Option[Room]]) { maybeRoom =>
             complete(maybeRoom)
           }
-        } ~ post {
+        } ~
         (post & entity(as[Room])) { room =>
           complete {
             rooms ! Rooms.CreateRoom(room)
           }
         }
-      }
     }
   }
+
 }

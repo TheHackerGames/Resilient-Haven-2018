@@ -14,7 +14,7 @@ class Rooms extends Actor {
     case PopRoom(roomType) =>
       val maybeRoom = rooms.find(_.types.contains(roomType))
       sender ! maybeRoom
-      maybeRoom.foreach(ro => context.become(receive(rooms.filter(_ == ro))))
+      maybeRoom.foreach(ro => context.become(receive(rooms.filterNot(_ == ro))))
     case PopRoom =>
       val maybeRoom = rooms.headOption
       sender ! maybeRoom
