@@ -1,11 +1,12 @@
 package com.resilient.routes
 
 import akka.actor.{ActorSystem, Props}
-import akka.http.scaladsl.server.Directives
+import akka.http.scaladsl.server.{Directives, Route}
 import akka.pattern.ask
 import akka.stream.Materializer
 import akka.util.Timeout
 import com.resilient.actors.Rooms
+import com.resilient.model.{Room, RoomType}
 import com.typesafe.config.Config
 
 import scala.concurrent.duration.DurationLong
@@ -16,8 +17,6 @@ trait RoomDirective {
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
   import io.circe.generic.auto._
 
-  private case class RoomRequest(roomId: Int)
-
   implicit val system: ActorSystem
 
   implicit val materializer: Materializer
@@ -25,21 +24,28 @@ trait RoomDirective {
 
   private val rooms = system.actorOf(Props[Rooms], "rooms")
 
-  val roomRoute = pathPrefix("rooms") {
-    get {
-      rejectEmptyResponse {
+  val roomRoute: Route = pathPrefix("rooms") {
+    rejectEmptyResponse {
+      (get & parameters("type")) { (roomType) =>
         implicit val askTimeout: Timeout = 3 seconds // and a timeout
 
-        onSuccess((rooms ? Rooms.PopRoom).mapTo[Option[Int]]) { maybeRoom =>
+        onSuccess((rooms ? Rooms.PopRoom(RoomType.withName(roomType))).mapTo[Option[Room]]) { maybeRoom =>
           complete(maybeRoom)
         }
-      }
-    } ~
-      post {
-        (post & entity(as[RoomRequest])) { (room) =>
-          rooms ! Rooms.CreateRoom(room.roomId)
-          complete()
+      } ~
+        get {
+          implicit val askTimeout: Timeout = 3 seconds // and a timeout
+
+          onSuccess((rooms ? Rooms.PopRoom).mapTo[Option[Room]]) { maybeRoom =>
+            complete(maybeRoom)
+          }
+        } ~ post {
+        (post & entity(as[Room])) { room =>
+          complete {
+            rooms ! Rooms.CreateRoom(room)
+          }
         }
       }
+    }
   }
 }
