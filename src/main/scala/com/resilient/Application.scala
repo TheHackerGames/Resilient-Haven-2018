@@ -7,22 +7,21 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.{ActorMaterializer, Materializer}
 import com.resilient.providers.ConfigProvider
-import com.resilient.routes.AuthenticationDirective
+import com.resilient.routes.{AuthenticationDirective, RoomDirective}
 import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.concurrent.ExecutionContextExecutor
 
-trait Service extends AuthenticationDirective {
+trait Service extends AuthenticationDirective with RoomDirective {
   self: ConfigProvider =>
 
   implicit val system: ActorSystem
   implicit val materializer: Materializer
 
-  val logger: LoggingAdapter
   val config: Config
 
   val routes: Route = logRequestResult("akka-http-microservice") {
-    authRoute
+    authRoute ~ roomRoute
   }
 
 }
@@ -38,7 +37,6 @@ object Application extends App {
     lazy implicit val system: ActorSystem = system$
     lazy implicit val executor: ExecutionContextExecutor = executor$
     lazy implicit val materializer: ActorMaterializer = materializer$
-    lazy val logger = Logging(system, getClass)
     lazy val config: Config = config$
   }
 

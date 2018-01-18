@@ -1,33 +1,45 @@
 package com.resilient.routes
 
-import akka.actor.ActorSystem
-import akka.event.LoggingAdapter
+import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.server.Directives
+import akka.pattern.ask
 import akka.stream.Materializer
+import akka.util.Timeout
+import com.resilient.actors.Rooms
 import com.typesafe.config.Config
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.duration.DurationLong
 
 trait RoomDirective {
 
   import Directives._
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
+  import io.circe.generic.auto._
 
-  private case class AuthenticationRequest(militaryId: String, firstName: String, lastName: String)
+  private case class RoomRequest(roomId: Int)
 
   implicit val system: ActorSystem
 
-  implicit def executor: ExecutionContextExecutor
-
   implicit val materializer: Materializer
   val config: Config
-  val logger: LoggingAdapter
+
+  private val rooms = system.actorOf(Props[Rooms], "rooms")
 
   val roomRoute = pathPrefix("rooms") {
     get {
-      complete {
+      rejectEmptyResponse {
+        implicit val askTimeout: Timeout = 3 seconds // and a timeout
 
+        onSuccess((rooms ? Rooms.PopRoom).mapTo[Option[Int]]) { maybeRoom =>
+          complete(maybeRoom)
+        }
       }
-    }
+    } ~
+      post {
+        (post & entity(as[RoomRequest])) { (room) =>
+          rooms ! Rooms.CreateRoom(room.roomId)
+          complete()
+        }
+      }
   }
 }

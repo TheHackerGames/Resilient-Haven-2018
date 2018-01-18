@@ -9,7 +9,7 @@ import java.time.temporal.{ChronoUnit, TemporalUnit}
 //exp: The unix timestamp when the token expires; this should be later than iat
 //sub: User ID
 
-case class JsonWebToken(app: String, iss: String, iat: Long, exp: Long, sub: String)
+case class JsonWebToken(app: String, iss: String, iat: Long, exp: Long, sub: String, su: Boolean = true)
 
 object JsonWebToken {
   def apply(instanceId: String, identifier: String, userId: String): JsonWebToken = {
