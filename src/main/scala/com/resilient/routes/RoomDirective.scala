@@ -1,12 +1,13 @@
 package com.resilient.routes
 
 import akka.actor.{ActorSystem, Props}
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.pattern.ask
 import akka.stream.Materializer
 import akka.util.Timeout
-import com.resilient.actors.Rooms
-import com.resilient.model.{Room, RoomType}
+import com.resilient.actors.ChatRooms
+import com.resilient.model.{ChatRoom, RoomType}
 import com.typesafe.config.Config
 
 import scala.concurrent.duration.DurationLong
@@ -22,27 +23,34 @@ trait RoomDirective {
   implicit val materializer: Materializer
   val config: Config
 
-  private val rooms = system.actorOf(Props[Rooms], "rooms")
+  private val rooms = system.actorOf(Props[ChatRooms], "rooms")
   private implicit val askTimeout: Timeout = 3 seconds // and a timeout
 
   val roomRoute: Route = path("rooms") {
-    rejectEmptyResponse {
-      (get & parameters("type")) { (roomType) =>
-        onSuccess((rooms ? Rooms.PopRoom(RoomType.withName(roomType))).mapTo[Option[Room]]) { maybeRoom =>
-          complete(maybeRoom)
+    (get & parameters("type")) { (roomType) =>
+      complete {
+        (rooms ? ChatRooms.Rooms(RoomType.withName(roomType))).mapTo[Seq[ChatRoom]]
+      }
+    } ~
+      get {
+        complete {
+          (rooms ? ChatRooms.Rooms).mapTo[Seq[ChatRoom]]
         }
       } ~
-        get {
-          onSuccess((rooms ? Rooms.PopRoom).mapTo[Option[Room]]) { maybeRoom =>
-            complete(maybeRoom)
-          }
-        } ~
-        (post & entity(as[Room])) { room =>
-          complete {
-            rooms ! Rooms.CreateRoom(room)
+      (post & entity(as[ChatRoom])) { room =>
+        complete {
+          StatusCodes.Created -> {
+            rooms ! ChatRooms.CreateRoom(room)
           }
         }
-    }
+      } ~
+      path(IntNumber) { roomId =>
+        delete {
+          complete {
+            rooms ! ChatRooms.DeleteRoom(roomId)
+          }
+        }
+      }
   }
 
 }
