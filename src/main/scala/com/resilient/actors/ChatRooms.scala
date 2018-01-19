@@ -1,11 +1,11 @@
 package com.resilient.actors
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorLogging}
 import com.resilient.actors.ChatRooms.{CreateRoom, DeleteRoom, Rooms}
 import com.resilient.model.ChatRoom
 import com.resilient.model.RoomType.RoomType
 
-class ChatRooms extends Actor {
+class ChatRooms extends Actor with ActorLogging {
 
   def receive: Receive = receive(Seq.empty)
 

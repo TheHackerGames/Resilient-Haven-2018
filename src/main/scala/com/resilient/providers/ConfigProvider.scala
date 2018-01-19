@@ -1,11 +1,7 @@
 package com.resilient.providers
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
 
 trait ConfigProvider {
   val config: Config
-}
-
-trait TypesafeConfig extends ConfigProvider {
-  lazy val config: Config = ConfigFactory.load()
 }

@@ -21,7 +21,8 @@ libraryDependencies ++= {
     "de.heikoseeberger" %% "akka-http-circe" % "1.20.0-RC1",
     "io.circe" %% "circe-core" % "0.9.0",
     "io.circe" %% "circe-generic" % "0.9.0",
-    "io.circe" %% "circe-parser" % "0.9.0"
+    "io.circe" %% "circe-parser" % "0.9.0",
+    "io.circe" %% "circe-generic-extras" % "0.9.0"
   )
 }
 

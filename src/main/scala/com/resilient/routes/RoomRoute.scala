@@ -12,21 +12,21 @@ import com.typesafe.config.Config
 
 import scala.concurrent.duration.DurationLong
 
-trait RoomDirective {
+private[routes] trait RoomRoute {
 
   import Directives._
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
   import io.circe.generic.auto._
 
   implicit val system: ActorSystem
-
   implicit val materializer: Materializer
+
   val config: Config
 
   private val rooms = system.actorOf(Props[ChatRooms], "rooms")
   private implicit val askTimeout: Timeout = 3 seconds // and a timeout
 
-  val roomRoute: Route = path("rooms") {
+  val roomRoute: Route = pathPrefix("rooms") {
     (get & parameters("type")) { (roomType) =>
       complete {
         (rooms ? ChatRooms.Rooms(RoomType.withName(roomType))).mapTo[Seq[ChatRoom]]
