@@ -5,7 +5,6 @@ import java.time.LocalDateTime
 import com.resilient.model.RoomType.RoomType
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
-import io.circe.java8.time._
 
 case class ChatRoom(id: Int, alias: String, types: Seq[RoomType], open: Option[LocalDateTime], close: Option[LocalDateTime])
 

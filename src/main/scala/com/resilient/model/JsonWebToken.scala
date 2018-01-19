@@ -6,12 +6,6 @@ import java.time.temporal.ChronoUnit
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
 
-//app: Your instance ID (the last field of the service instance locator)
-//iss: An identifier for the key used to sign the token, has the format “api_keys/<key ID>”
-//iat: The unix timestamp when the token was issued (seconds)
-//exp: The unix timestamp when the token expires; this should be later than iat
-//sub: User ID
-
 case class JsonWebToken(app: String, iss: String, iat: Long, exp: Long, sub: String, su: Boolean = true)
 
 object JsonWebToken {

@@ -1,6 +1,6 @@
 import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 
-name := "encryption-api"
+name := "haven-api"
 
 scalaVersion := "2.12.4"
 
