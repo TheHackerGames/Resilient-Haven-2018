@@ -22,7 +22,8 @@ libraryDependencies ++= {
     "io.circe" %% "circe-core" % "0.9.0",
     "io.circe" %% "circe-generic" % "0.9.0",
     "io.circe" %% "circe-parser" % "0.9.0",
-    "io.circe" %% "circe-generic-extras" % "0.9.0"
+    "io.circe" %% "circe-generic-extras" % "0.9.0",
+    "io.circe" %% "circe-java8" % "0.9.0"
   )
 }
 

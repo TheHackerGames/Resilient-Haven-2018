@@ -11,7 +11,7 @@ class ChatRooms extends Actor with ActorLogging {
 
   def receive(rooms: Seq[ChatRoom]): Receive = {
     case CreateRoom(room) => context.become(receive(if (!rooms.exists(_.id == room.id)) rooms :+ room else rooms))
-    case Rooms(roomType)  => sender ! rooms.filter(_.types.contains(roomType))
+    case Rooms(filter)  => sender ! rooms.filter(filter)
     case Rooms            => sender ! rooms
     case DeleteRoom(id)   => context.become(receive(rooms.filterNot(_.id == id)))
   }
@@ -24,7 +24,7 @@ object ChatRooms {
 
   case object Rooms
 
-  case class Rooms(roomType: RoomType)
+  case class Rooms(filter: ChatRoom => Boolean)
 
   case class DeleteRoom(id: Int)
 
